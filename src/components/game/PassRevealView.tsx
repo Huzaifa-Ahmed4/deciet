@@ -45,7 +45,7 @@ export function PassRevealView({ state, dispatch }: PassRevealViewProps) {
         Hold the card to peek. No one else can see.
       </p>
 
-      <div className="mt-5 flex-1 min-h-[300px] [perspective:1400px]">
+      <div className="mt-5 flex-1 min-h-[340px] flex [perspective:1400px]">
         <div
           className={`card-3d relative w-full h-full rounded-3xl ${flipped ? "[transform:rotateY(180deg)]" : ""}`}
         >
