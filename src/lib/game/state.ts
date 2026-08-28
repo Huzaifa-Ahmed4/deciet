@@ -54,7 +54,7 @@ export type GameAction =
 
 export const MIN_PLAYERS = 3;
 export const MAX_PLAYERS = 10;
-export const STORAGE_KEY = "maskroom.state.v1";
+export const STORAGE_KEY = "deceit.state.v1";
 
 export const initialState: GameState = {
   phase: "setup",
