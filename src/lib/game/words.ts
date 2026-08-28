@@ -52,5 +52,5 @@ export const CATEGORIES: Category[] = [
 ];
 
 export function getCategory(id: CategoryId): Category {
-  return CATEGORIES.find((c) => c.id === id) ?? CATEGORIES[0];
+  return CATEGORIES.find((c) => c.id === id) ?? CATEGORIES[0]!;
 }

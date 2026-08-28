@@ -9,7 +9,7 @@ interface PassRevealViewProps {
 
 export function PassRevealView({ state, dispatch }: PassRevealViewProps) {
   const round = state.round!;
-  const playerId = round.order[round.seen];
+  const playerId = round.order[round.seen]!;
   const player = state.players.find((p) => p.id === playerId)!;
   const isImpostor = roleOf(round, playerId) === "impostor";
 
@@ -45,10 +45,11 @@ export function PassRevealView({ state, dispatch }: PassRevealViewProps) {
         Hold the card to peek. No one else can see.
       </p>
 
-      <div className="mt-5 flex-1 min-h-[300px] [perspective:1400px]">
+      <div className="relative mt-5 flex-1 min-h-[340px] [perspective:1400px]">
         <div
-          className={`card-3d relative w-full h-full rounded-3xl ${flipped ? "[transform:rotateY(180deg)]" : ""}`}
+          className={`card-3d absolute inset-0 rounded-3xl ${flipped ? "[transform:rotateY(180deg)]" : ""}`}
         >
+
           {/* Sealed face */}
           <div className="backface absolute inset-0 rounded-3xl bg-card ring-1 ring-black/30 grid place-items-center">
             <div className="text-center px-6">
