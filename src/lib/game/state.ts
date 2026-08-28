@@ -77,14 +77,16 @@ function shuffle<T>(items: T[]): T[] {
   const out = [...items];
   for (let i = out.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [out[i], out[j]] = [out[j], out[i]];
+    const tmp = out[i]!;
+    out[i] = out[j]!;
+    out[j] = tmp;
   }
   return out;
 }
 
 function createRound(state: GameState): Round {
   const category = getCategory(state.category);
-  const word = category.words[Math.floor(Math.random() * category.words.length)];
+  const word = category.words[Math.floor(Math.random() * category.words.length)]!;
   const order = shuffle(state.players).map((p) => p.id);
   const impostorCount = Math.min(state.impostorCount, Math.max(1, state.players.length - 2));
   const impostorIds = shuffle(order).slice(0, impostorCount);

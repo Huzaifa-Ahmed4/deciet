@@ -9,7 +9,7 @@ interface PassRevealViewProps {
 
 export function PassRevealView({ state, dispatch }: PassRevealViewProps) {
   const round = state.round!;
-  const playerId = round.order[round.seen];
+  const playerId = round.order[round.seen]!;
   const player = state.players.find((p) => p.id === playerId)!;
   const isImpostor = roleOf(round, playerId) === "impostor";
 
