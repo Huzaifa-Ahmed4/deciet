@@ -7,9 +7,9 @@ import { ResultView } from "@/components/game/ResultView";
 import { useWakeLock } from "@/hooks/use-wake-lock";
 import { gameReducer, initialState, loadState, persistState } from "@/lib/game/state";
 
-const title = "Maskroom — Pass-the-Phone Impostor Party Game";
+const title = "Deceit — Pass-the-Phone Impostor Party Game";
 const description =
-  "One phone, 3–10 players. Everyone gets a secret word except the impostor. Give clues, argue, and vote them out. No signup, plays instantly in your browser.";
+  "One phone, 3–10 players. Everyone gets a secret word except the deceiver. Give clues, argue, and expose them. No signup, plays instantly in your browser.";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -54,10 +54,10 @@ function Index() {
         <header className="flex items-center justify-between px-5 pt-5">
           <div className="flex items-center gap-2">
             <span className="size-6 grid place-items-center rounded-md bg-primary text-primary-foreground font-display font-bold text-sm shadow-[0_2px_0_#00000030]">
-              M
+              D
             </span>
             <span className="font-display font-bold tracking-tight text-base leading-none">
-              MASK<span className="text-primary">ROOM</span>
+              DECE<span className="text-primary">IT</span>
             </span>
           </div>
           <span className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">

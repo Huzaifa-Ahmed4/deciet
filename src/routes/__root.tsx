@@ -80,12 +80,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         name: "viewport",
         content: "width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover",
       },
-      { title: "Maskroom — Impostor Party Game" },
+      { title: "Deceit — Impostor Party Game" },
       {
         name: "description",
         content: "Pass-the-phone social deduction party game for 3–10 players.",
       },
-      { property: "og:title", content: "Maskroom — Impostor Party Game" },
+      { property: "og:title", content: "Deceit — Impostor Party Game" },
       {
         property: "og:description",
         content: "Pass-the-phone social deduction party game for 3–10 players.",
