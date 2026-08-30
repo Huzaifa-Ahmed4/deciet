@@ -62,12 +62,12 @@
   --radius: 1rem;
 
   /* plum table */
-  --background: oklch(0.201 0.032 320);
+  --background: oklch(0.172 0.026 312);
   --foreground: oklch(0.949 0.019 88);
   /* raised panel (plum2) */
-  --surface: oklch(0.239 0.036 325);
+  --surface: oklch(0.218 0.030 318);
   /* card tile */
-  --card: oklch(0.277 0.038 325);
+  --card: oklch(0.258 0.032 320);
   --card-foreground: oklch(0.949 0.019 88);
   --popover: oklch(0.239 0.036 325);
   --popover-foreground: oklch(0.949 0.019 88);
@@ -77,9 +77,9 @@
   --secondary: oklch(0.239 0.036 325);
   --secondary-foreground: oklch(0.949 0.019 88);
   --muted: oklch(0.277 0.038 325);
-  --muted-foreground: oklch(0.663 0.035 331);
+  --muted-foreground: oklch(0.638 0.028 322);
   /* gold */
-  --accent: oklch(0.782 0.135 70);
+  --accent: oklch(0.800 0.140 84);
   --accent-foreground: oklch(0.201 0.032 320);
   --destructive: oklch(0.598 0.207 20.5);
   --destructive-foreground: oklch(0.949 0.019 88);
@@ -147,4 +147,169 @@
 @utility backface {
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
+}
+
+/* ---------------------------------------------------------------------------
+ * Deceit motion & interaction layer
+ * Distrust reads as: slow suspicious drifts, sudden hard reveals, glitchy text.
+ * ------------------------------------------------------------------------- */
+
+@theme inline {
+  --animate-rise: rise 520ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-slam: slam 460ms cubic-bezier(0.16, 1.2, 0.3, 1) both;
+  --animate-smear: smear 700ms ease-out both;
+  --animate-suspect: suspect 5s ease-in-out infinite;
+  --animate-scan: scan 2.6s linear infinite;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slam {
+  0% {
+    opacity: 0;
+    transform: scale(1.35) rotate(-2.5deg);
+    filter: blur(10px);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(0.97) rotate(0.4deg);
+    filter: blur(0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes smear {
+  0% {
+    opacity: 0;
+    letter-spacing: 0.4em;
+    filter: blur(8px);
+  }
+  100% {
+    opacity: 1;
+    letter-spacing: -0.01em;
+    filter: blur(0);
+  }
+}
+
+@keyframes suspect {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  33% {
+    transform: translate3d(-4px, 3px, 0) rotate(-0.8deg);
+  }
+  66% {
+    transform: translate3d(3px, -3px, 0) rotate(0.7deg);
+  }
+}
+
+@keyframes scan {
+  from {
+    transform: translateY(-120%);
+  }
+  to {
+    transform: translateY(320%);
+  }
+}
+
+/* staggered entrances for lists / stacked sections */
+@utility stagger {
+  & > * {
+    animation: var(--animate-rise);
+  }
+  & > *:nth-child(1) {
+    animation-delay: 0ms;
+  }
+  & > *:nth-child(2) {
+    animation-delay: 60ms;
+  }
+  & > *:nth-child(3) {
+    animation-delay: 120ms;
+  }
+  & > *:nth-child(4) {
+    animation-delay: 180ms;
+  }
+  & > *:nth-child(5) {
+    animation-delay: 240ms;
+  }
+  & > *:nth-child(6) {
+    animation-delay: 300ms;
+  }
+  & > *:nth-child(n + 7) {
+    animation-delay: 360ms;
+  }
+}
+
+/* subtle lift + gold edge on pointer devices */
+@utility lift {
+  transition:
+    transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 180ms ease,
+    border-color 180ms ease,
+    background-color 180ms ease;
+
+  @media (hover: hover) {
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 24px -14px oklch(0 0 0 / 70%);
+    }
+  }
+}
+
+@utility glow-accent {
+  @media (hover: hover) {
+    &:hover {
+      box-shadow: 0 0 0 1px color-mix(in oklab, var(--accent) 55%, transparent);
+    }
+  }
+}
+
+/* creeping vignette used behind hero / reveal surfaces */
+@utility haze {
+  position: relative;
+  isolation: isolate;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: -20%;
+    z-index: -1;
+    background:
+      radial-gradient(
+        45% 40% at 20% 15%,
+        color-mix(in oklab, var(--primary) 26%, transparent),
+        transparent 70%
+      ),
+      radial-gradient(
+        40% 35% at 85% 80%,
+        color-mix(in oklab, var(--accent) 18%, transparent),
+        transparent 70%
+      );
+    filter: blur(6px);
+    animation: var(--animate-suspect);
+    pointer-events: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
