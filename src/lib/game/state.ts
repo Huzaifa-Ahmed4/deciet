@@ -1,4 +1,4 @@
-import { getCategory, type CategoryId } from "./words";
+import { getCategory, pickSecret, type CategoryId } from "./words";
 
 /* ---------------------------------------------------------------------------
  * State model
@@ -9,8 +9,9 @@ import { getCategory, type CategoryId } from "./words";
  *     ▲                                                                    │
  *     └───────────────── backToLobby ◀───────────── playAgain ─────────────┘
  *
- * `config` (players / impostorCount / category) survives every transition and
- * is persisted to LocalStorage. `round` is regenerated on each new game.
+ * `config` (players / impostorCount / teamMode) survives every transition and
+ * is persisted to LocalStorage. The category is chosen by the game, never the
+ * players, and `round` is regenerated on each new game.
  * ------------------------------------------------------------------------- */
 
 export type Phase = "setup" | "reveal" | "play" | "result";
@@ -22,8 +23,14 @@ export interface Player {
 
 export interface Round {
   word: string;
+  /** oblique hint shown only to impostors */
+  clue: string;
+  categoryId: CategoryId;
+  categoryLabel: string;
   /** ids of players holding the IMPOSTOR role */
   impostorIds: string[];
+  /** impostors see each other's names on their card */
+  teamMode: boolean;
   /** shuffled player ids: both pass-the-phone order and clue turn order */
   order: string[];
   /** how many players have already seen their card */
@@ -33,18 +40,20 @@ export interface Round {
 export interface GameState {
   phase: Phase;
   players: Player[];
-  impostorCount: 1 | 2;
-  category: CategoryId;
+  impostorCount: ImpostorCount;
+  teamMode: boolean;
   timerSeconds: number;
   round: Round | null;
 }
+
+export type ImpostorCount = 1 | 2 | 3;
 
 export type GameAction =
   | { type: "addPlayer"; name: string }
   | { type: "renamePlayer"; id: string; name: string }
   | { type: "removePlayer"; id: string }
-  | { type: "setImpostorCount"; count: 1 | 2 }
-  | { type: "setCategory"; category: CategoryId }
+  | { type: "setImpostorCount"; count: ImpostorCount }
+  | { type: "setTeamMode"; teamMode: boolean }
   | { type: "startGame" }
   | { type: "nextPlayer" }
   | { type: "revealResult" }
@@ -54,7 +63,9 @@ export type GameAction =
 
 export const MIN_PLAYERS = 3;
 export const MAX_PLAYERS = 10;
-export const STORAGE_KEY = "deceit.state.v1";
+/** team mode only makes sense with a bigger table */
+export const TEAM_MODE_MIN_PLAYERS = 6;
+export const STORAGE_KEY = "deceit.state.v2";
 
 export const initialState: GameState = {
   phase: "setup",
@@ -64,7 +75,7 @@ export const initialState: GameState = {
     { id: "p3", name: "Sofia" },
   ],
   impostorCount: 1,
-  category: "food",
+  teamMode: false,
   timerSeconds: 120,
   round: null,
 };
@@ -84,13 +95,32 @@ function shuffle<T>(items: T[]): T[] {
   return out;
 }
 
+/** How many impostors this table can actually support. */
+export function maxImpostorsFor(playerCount: number): ImpostorCount {
+  if (playerCount >= 8) return 3;
+  if (playerCount >= 5) return 2;
+  return 1;
+}
+
+export function teamModeAvailable(state: GameState) {
+  return state.players.length >= TEAM_MODE_MIN_PLAYERS && state.impostorCount >= 2;
+}
+
 function createRound(state: GameState): Round {
-  const category = getCategory(state.category);
-  const word = category.words[Math.floor(Math.random() * category.words.length)]!;
+  const { category, entry } = pickSecret();
   const order = shuffle(state.players).map((p) => p.id);
-  const impostorCount = Math.min(state.impostorCount, Math.max(1, state.players.length - 2));
+  const impostorCount = Math.min(state.impostorCount, maxImpostorsFor(state.players.length));
   const impostorIds = shuffle(order).slice(0, impostorCount);
-  return { word, impostorIds, order, seen: 0 };
+  return {
+    word: entry.word,
+    clue: entry.clue,
+    categoryId: category.id,
+    categoryLabel: category.label,
+    impostorIds,
+    teamMode: teamModeAvailable(state) && impostorCount > 1,
+    order,
+    seen: 0,
+  };
 }
 
 export function canStart(state: GameState) {
@@ -124,14 +154,26 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         players: state.players.map((p) => (p.id === action.id ? { ...p, name: action.name } : p)),
       };
 
-    case "removePlayer":
-      return { ...state, players: state.players.filter((p) => p.id !== action.id) };
+    case "removePlayer": {
+      const players = state.players.filter((p) => p.id !== action.id);
+      const impostorCount = Math.min(state.impostorCount, maxImpostorsFor(players.length));
+      return {
+        ...state,
+        players,
+        impostorCount,
+        teamMode: state.teamMode && players.length >= TEAM_MODE_MIN_PLAYERS && impostorCount >= 2,
+      };
+    }
 
     case "setImpostorCount":
-      return { ...state, impostorCount: action.count };
+      return {
+        ...state,
+        impostorCount: action.count,
+        teamMode: action.count >= 2 ? state.teamMode : false,
+      };
 
-    case "setCategory":
-      return { ...state, category: action.category };
+    case "setTeamMode":
+      return { ...state, teamMode: action.teamMode };
 
     case "startGame": {
       if (!canStart(state)) return state;
@@ -167,12 +209,13 @@ export function loadState(): GameState | null {
     if (!raw) return null;
     const parsed = JSON.parse(raw) as Partial<GameState>;
     if (!Array.isArray(parsed.players)) return null;
+    const count = parsed.impostorCount;
     // Never resume mid-reveal: a reloaded phone should not leak a card.
     return {
       ...initialState,
       players: parsed.players,
-      impostorCount: parsed.impostorCount === 2 ? 2 : 1,
-      category: parsed.category === "objects" ? "objects" : "food",
+      impostorCount: count === 2 || count === 3 ? count : 1,
+      teamMode: parsed.teamMode === true,
     };
   } catch {
     return null;
@@ -186,10 +229,12 @@ export function persistState(state: GameState) {
       JSON.stringify({
         players: state.players,
         impostorCount: state.impostorCount,
-        category: state.category,
+        teamMode: state.teamMode,
       }),
     );
   } catch {
     /* storage unavailable — game still works in memory */
   }
 }
+
+export { getCategory };
