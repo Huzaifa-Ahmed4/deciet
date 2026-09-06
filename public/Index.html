@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Deceit — Pass-the-Phone Impostor Party Game</title>
+  <meta name="description" content="One phone, 3–10 players. Everyone gets the category and the secret word — except the impostors, who get only a slippery clue. Bluff, accuse, expose. No signup." />
+  <meta property="og:title" content="Deceit — Pass-the-Phone Impostor Party Game" />
+  <meta property="og:description" content="Pass-the-phone social deduction party game for 3–10 players." />
+  <meta property="og:type" content="website" />
+  <meta name="theme-color" content="#1d1320" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+  <style>
+    :root {
+      --bg: oklch(0.172 0.026 312);
+      --surface: oklch(0.218 0.030 318);
+      --card: oklch(0.258 0.032 320);
+      --fg: oklch(0.949 0.019 88);
+      --muted: oklch(0.638 0.028 322);
+      --crimson: oklch(0.598 0.207 20.5);
+      --gold: oklch(0.800 0.140 84);
+    }
+    * { margin: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+      min-height: 100vh;
+      -webkit-tap-highlight-color: transparent;
+    }
+    h1, h2, .display {
+      font-family: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+    .wrap {
+      max-width: 430px;
+      margin: 0 auto;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 0 20px;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 20px;
+    }
+    .brand { display: flex; align-items: center; gap: 8px; }
+    .badge {
+      width: 24px; height: 24px;
+      display: grid; place-items: center;
+      border-radius: 6px;
+      background: var(--crimson);
+      color: var(--fg);
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-weight: 700; font-size: 14px;
+      box-shadow: 0 2px 0 #00000030;
+    }
+    .wordmark { font-family: "Bricolage Grotesque", sans-serif; font-weight: 700; letter-spacing: -0.02em; }
+    .wordmark em { color: var(--crimson); font-style: normal; }
+    .nav-link {
+      font-size: 11px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.18em;
+      color: var(--muted); text-decoration: none;
+      transition: color 180ms ease;
+    }
+    .nav-link:hover { color: var(--gold); }
+    main { flex: 1; display: flex; flex-direction: column; gap: 24px; padding: 40px 0 24px; }
+    .eyebrow {
+      font-size: 11px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.2em;
+      color: var(--gold);
+    }
+    h1 { font-size: 48px; line-height: 0.92; margin-top: 12px; text-wrap: balance; }
+    h1 .sus { color: var(--crimson); display: inline-block; animation: suspect 5s ease-in-out infinite; }
+    .lede { margin-top: 12px; font-size: 14px; color: var(--muted); text-wrap: pretty; line-height: 1.6; }
+    .cta { display: flex; flex-direction: column; gap: 8px; }
+    .btn {
+      display: grid; place-items: center;
+      width: 100%; border-radius: 16px;
+      text-decoration: none; color: var(--fg);
+      transition: transform 120ms ease, filter 120ms ease, box-shadow 180ms ease;
+    }
+    .btn:active { transform: translateY(2px) scale(0.98); }
+    .btn-primary {
+      height: 64px;
+      background: var(--crimson);
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-weight: 700; font-size: 20px;
+      box-shadow: 0 4px 0 #00000040, 0 0 0 2px color-mix(in oklab, var(--crimson) 60%, transparent);
+    }
+    .btn-ghost {
+      padding: 14px 0;
+      background: var(--surface);
+      box-shadow: 0 0 0 1px #00000020 inset;
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-weight: 600; font-size: 14px;
+    }
+    @media (hover: hover) {
+      .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 24px -14px #000000b3; }
+      .btn-ghost:hover { box-shadow: 0 0 0 1px color-mix(in oklab, var(--gold) 55%, transparent); }
+      .card:hover { transform: translateY(-2px); box-shadow: 0 0 0 1px color-mix(in oklab, var(--gold) 55%, transparent); }
+    }
+    .cards { display: flex; flex-direction: column; gap: 8px; list-style: none; padding: 0; }
+    .card {
+      border-radius: 16px;
+      background: var(--surface);
+      box-shadow: 0 0 0 1px #00000020 inset;
+      padding: 16px;
+      transition: transform 180ms ease, box-shadow 180ms ease;
+    }
+    .card p:first-child { font-family: "Bricolage Grotesque", sans-serif; font-weight: 700; font-size: 16px; }
+    .card p:last-child { font-size: 14px; color: var(--muted); margin-top: 4px; text-wrap: pretty; }
+    footer { padding-bottom: 24px; font-size: 11px; color: var(--muted); }
+    @keyframes suspect {
+      0%, 100% { transform: translate3d(0,0,0) rotate(0deg); }
+      33% { transform: translate3d(-4px,3px,0) rotate(-0.8deg); }
+      66% { transform: translate3d(3px,-3px,0) rotate(0.7deg); }
+    }
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    main > * { animation: rise 520ms cubic-bezier(0.2,0.8,0.2,1) both; }
+    main > *:nth-child(2) { animation-delay: 60ms; }
+    main > *:nth-child(3) { animation-delay: 120ms; }
+    main > *:nth-child(4) { animation-delay: 180ms; }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <span class="badge">D</span>
+        <span class="wordmark">DECE<em>IT</em></span>
+      </div>
+      <a class="nav-link" href="/how-to-play">How to play</a>
+    </header>
+
+    <main>
+      <div>
+        <p class="eyebrow">One phone · 3–10 players · no signup</p>
+        <h1>Everybody knows the word. <span class="sus">Almost everybody.</span></h1>
+        <p class="lede">
+          Pass the phone around the table. Most players get the secret word and its
+          category — the impostors get only a slippery clue. Give clues out loud,
+          watch for the one who's guessing, and vote.
+        </p>
+      </div>
+
+      <div class="cta">
+        <a class="btn btn-primary" href="/play">Start a game</a>
+        <a class="btn btn-ghost" href="/how-to-play">How to play</a>
+      </div>
+
+      <ul class="cards">
+        <li class="card">
+          <p>Clue, not certainty</p>
+          <p>Impostors get a deliberately vague hint — enough to bluff, never enough to be safe.</p>
+        </li>
+        <li class="card">
+          <p>The game deals the category</p>
+          <p>Nobody picks. Everyone sees it. Words can be food, places, people, feelings — anything.</p>
+        </li>
+        <li class="card">
+          <p>Team mode</p>
+          <p>With 6+ players, two or three impostors learn each other and cover for one another.</p>
+        </li>
+      </ul>
+    </main>
+
+    <footer>Best played out loud, in person, with people you thought you could trust.</footer>
+  </div>
+</body>
+</html>
