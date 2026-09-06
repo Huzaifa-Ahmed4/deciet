@@ -156,7 +156,11 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
     case "removePlayer": {
       const players = state.players.filter((p) => p.id !== action.id);
-      const impostorCount = Math.min(state.impostorCount, maxImpostorsFor(players.length));
+      const impostorCount = Math.min(
+        state.impostorCount,
+        maxImpostorsFor(players.length),
+      ) as ImpostorCount;
+
       return {
         ...state,
         players,

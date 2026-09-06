@@ -29,8 +29,19 @@ export function GamePlayView({ state, dispatch }: GamePlayViewProps) {
   const progress = Math.max(0, remaining / state.timerSeconds);
 
   return (
-    <section className="flex-1 px-5 pt-6 pb-6 flex flex-col gap-5">
-      <div className="flex items-center gap-4 rounded-2xl bg-surface ring-1 ring-black/20 p-4">
+    <section className="flex-1 px-5 pt-6 pb-6 flex flex-col gap-5 stagger">
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="rounded-full bg-accent/15 text-accent px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em]">
+          Category · {round.categoryLabel}
+        </span>
+        {round.teamMode && (
+          <span className="rounded-full bg-primary/20 text-primary px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em]">
+            Team mode · {round.impostorIds.length} impostors
+          </span>
+        )}
+      </div>
+      <div className="flex items-center gap-4 rounded-2xl bg-surface ring-1 ring-black/20 p-4 lift">
+
         <div className="relative size-16 shrink-0">
           <div
             className="absolute inset-0 rounded-full"
